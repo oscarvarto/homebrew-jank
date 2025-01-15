@@ -7,6 +7,7 @@ class Jank < Formula
 
   depends_on "cmake" => :build
   depends_on "ninja" => :build
+  depends_on "git-lfs" => :build
   depends_on "llvm@19"
   depends_on "bdw-gc"
   depends_on "boost"
