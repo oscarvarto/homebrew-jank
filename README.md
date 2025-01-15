@@ -49,6 +49,14 @@ And use brew as normal:
 brew install jank
 ```
 
+Or, in a [`brew bundle`](https://github.com/Homebrew/homebrew-bundle) `Brewfile`:
+
+```ruby
+tap "elken/jank"
+brew "jank"
+```
+
+
 # Documentation
 
 For more on `brew`, check `brew help`.
