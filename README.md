@@ -30,6 +30,14 @@ Currently, Jank doesn't have a stable versioning scheme so the only
 version will be 0.1. As such, if you want a new version you'll have to
 reinstall the package.
 
+If you get an error about `git-lfs` missing, you may have to run the
+below:
+
+```bash
+git lfs install
+sudo ln -s "$(which git-lfs)" "$(git --exec-path)/git-lfs"
+```
+
 You can either:
 
 ```bash

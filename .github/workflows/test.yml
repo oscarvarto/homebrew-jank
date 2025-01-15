@@ -10,7 +10,7 @@ jobs:
   test-bot:
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-13, macos-15]
+        os: [macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Set up Homebrew
@@ -32,7 +32,9 @@ jobs:
 
       - run: brew test-bot --only-formulae
 
-      - run: brew install jank && brew test jank
+      - run: brew install git-lfs && git lfs install && sudo ln -s "$(which git-lfs)" "$(git --exec-path)/git-lfs"
+
+      - run: brew install jank && brew test jank && file "$(brew --prefix)/bin/jank"
 
       - name: Upload bottles as artifact
         if: always() && github.event_name == 'pull_request'
