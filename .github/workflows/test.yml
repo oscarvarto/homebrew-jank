@@ -1,0 +1,26 @@
+name: Homebrew Tests
+
+on: [push, pull_request]
+
+jobs:
+
+  brew-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run brew test (macOS)
+      if: matrix.os == 'macos-latest'
+      run: |
+        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
+        brew tap ${{ github.repository }}
+        brew test-bot --only-formulae --keep-tmp
+    - name: Run test (Ubuntu)
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ruby
+        bundle install
+        rake test
