@@ -18,7 +18,7 @@ class Jank < Formula
   def install
     if OS.mac?
       ENV["SDKROOT"] = MacOS.sdk_path
-      ENV.prepend_path "PATH", Formula["llm@19"].opt_bin
+      ENV.prepend_path "PATH", Formula["llvm@19"].opt_bin
       ENV.append "LDFLAGS", "-Wl,-rpath,#{Formula["llvm@19"].opt_lib}"
 
       ENV.append "CPPFLAGS", "-L#{Formula["llvm@19"].opt_include}"
