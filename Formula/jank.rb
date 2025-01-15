@@ -16,18 +16,22 @@ class Jank < Formula
   depends_on "openssl"
 
   def install
+    ENV.prepend_path "PATH", Formula["llvm@19"].opt_bin
+
+    ENV.append "LDFLAGS", "-Wl,-rpath,#{Formula["llvm@19"].opt_lib}"
+
+    ENV.append "CPPFLAGS", "-L#{Formula["llvm@19"].opt_include}"
+    ENV.append "CPPFLAGS", "-fno-sized-deallocation"
+
+    jank_install_dir = OS.linux? ? libexec : bin
+    inreplace "compiler+runtime/cmake/install.cmake",
+              '\\$ORIGIN',
+              jank_install_dir
     if OS.mac?
       ENV["SDKROOT"] = MacOS.sdk_path
-      ENV.prepend_path "PATH", Formula["llvm@19"].opt_bin
-      ENV.append "LDFLAGS", "-Wl,-rpath,#{Formula["llvm@19"].opt_lib}"
-
-      ENV.append "CPPFLAGS", "-L#{Formula["llvm@19"].opt_include}"
-      ENV.append "CPPFLAGS", "-fno-sized-deallocation"
-
-      jank_install_dir = OS.linux? ? libexec : bin
-      inreplace "compiler+runtime/cmake/install.cmake",
-                '\\$ORIGIN',
-                jank_install_dir
+    else
+      ENV["CC"] = Formula["llvm@19"].opt_bin/"clang"
+      ENV["CXX"] = Formula["llvm@19"].opt_bin/"clang++"
     end
 
     cd "compiler+runtime"
