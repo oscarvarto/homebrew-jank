@@ -7,26 +7,12 @@
   <a href="https://github.com/sponsors/jeaye" target="_blank"><img src="https://img.shields.io/github/sponsors/jeaye?style=flat&logo=github&logoColor=fd893f&colorA=363636&colorB=363636" /></a>
   <a href="https://twitter.com/jeayewilkerson" target="_blank"><img src="https://img.shields.io/twitter/follow/jeayewilkerson?style=flat&logo=x&logoColor=fd893f&colorA=363636&colorB=363636" /></a>
   <br/>
-  <a href="https://github.com/elken/homebrew-jank/actions" target="_blank"><img src="https://img.shields.io/github/actions/workflow/status/elken/homebrew-jank/test.yml?branch=master&style=flat&logo=github&logoColor=fd893f&colorA=363636&colorB=363636" alt="CI" /></a>
+  <a href="https://github.com/jank-lang/homebrew-jank/actions" target="_blank"><img src="https://img.shields.io/github/actions/workflow/status/jank-lang/homebrew-jank/test.yml?branch=master&style=flat&logo=github&logoColor=fd893f&colorA=363636&colorB=363636" alt="CI" /></a>
 </div>
-
-# What is jank?
-
-Most simply, jank is a [Clojure](https://clojure.org/) dialect on LLVM with C++ interop.
-Less simply, jank is a general-purpose programming language which embraces the interactive,
-functional, value-oriented nature of Clojure and the desire for the native
-runtime and performance of C++. jank aims to be strongly compatible with
-Clojure. While Clojure's default host is the JVM and its interop is with Java,
-jank's host is LLVM and its interop is with C++.
-
-For the current progress of jank and its usability, see the tables here: https://jank-lang.org/progress/
-
-The current tl;dr for jank's usability is: **still getting there, but not ready for
-use yet. Check back in a few months!**
 
 # Installation
 
-Currently, Jank doesn't have a stable versioning scheme so the only
+Currently, jank doesn't have a stable versioning scheme so the only
 version will be 0.1. As such, if you want a new version you'll have to
 reinstall the package.
 
@@ -41,13 +27,13 @@ sudo ln -s "$(which git-lfs)" "$(git --exec-path)/git-lfs"
 You can either:
 
 ```bash
-brew install elken/jank/jank
+brew install jank-lang/jank/jank
 ```
 
 To just install jank, or you can tap this repo using the below:
 
 ```bash
-brew tap elken/jank
+brew tap jank-lang/jank
 ```
 
 And use brew as normal:
@@ -59,7 +45,7 @@ brew install jank
 Or, in a [`brew bundle`](https://github.com/Homebrew/homebrew-bundle) `Brewfile`:
 
 ```ruby
-tap "elken/jank"
+tap "jank-lang/jank"
 brew "jank"
 ```
 
