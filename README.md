@@ -11,6 +11,12 @@
 </div>
 
 # Installation
+> [!NOTE]
+> Depending on what packages you have installed already, you're likely to get warnings about `brew link` not completing.
+>
+> It's up to you how you handle these, you can safely "overwrite" the files that jank installs. Homebrew keeps all the original files in `$(brew --repo)/Cellar` and just links them to the main `bin`, `etc`, `include` and `lib` folders after install.
+>
+> If you want to recover them later, you can do `brew link --overwrite --force <formula>`, optionally with `--dry-run` to see what will get wiped.
 
 Currently, jank doesn't have a stable versioning scheme so the only
 version will be 0.1. As such, if you want a new version you'll have to
@@ -48,7 +54,6 @@ Or, in a [`brew bundle`](https://github.com/Homebrew/homebrew-bundle) `Brewfile`
 tap "jank-lang/jank"
 brew "jank"
 ```
-
 
 # Documentation
 
