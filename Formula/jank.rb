@@ -27,6 +27,7 @@ class Jank < Formula
     inreplace "compiler+runtime/cmake/install.cmake",
               '\\$ORIGIN',
               jank_install_dir
+
     if OS.mac?
       ENV["SDKROOT"] = MacOS.sdk_path
     else
