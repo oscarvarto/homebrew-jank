@@ -1,7 +1,7 @@
 class Jank < Formula
   desc "Native Clojure dialect hosted on LLVM"
   homepage "https://jank-lang.org"
-  url "https://github.com/jank-lang/jank.git", branch: "system-boehm"
+  url "https://github.com/jank-lang/jank.git", branch: "main"
   version "0.1"
   license "MPL-2.0"
 
@@ -27,6 +27,7 @@ class Jank < Formula
     inreplace "compiler+runtime/cmake/install.cmake",
               '\\$ORIGIN',
               jank_install_dir
+
     if OS.mac?
       ENV["SDKROOT"] = MacOS.sdk_path
     else
@@ -47,7 +48,7 @@ class Jank < Formula
     jank = bin/"jank"
 
     (testpath/"test.jank").write <<~JANK
-      (+ 5 7)
+      ((fn [] (+ 5 7)))
     JANK
 
     assert_equal "12", shell_output("#{jank} run test.jank").strip.lines.last

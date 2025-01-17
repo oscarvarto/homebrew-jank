@@ -24,14 +24,6 @@ jobs:
           key: ${{ matrix.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
           restore-keys: ${{ matrix.os }}-rubygems-
 
-      - run: brew test-bot --only-cleanup-before
-
-      - run: brew test-bot --only-setup
-
-      - run: brew test-bot --only-tap-syntax
-
-      - run: brew test-bot --only-formulae
-
       - run: brew install git-lfs && git lfs install && sudo ln -s "$(which git-lfs)" "$(git --exec-path)/git-lfs"
 
       - run: brew install jank && brew test jank && file "$(brew --prefix)/bin/jank"
