@@ -39,7 +39,8 @@ class Jank < Formula
 
     system "./bin/configure",
            "-GNinja",
-           *std_cmake_args
+           *std_cmake_args,
+           "-DHOMEBREW_ALLOW_FETCHCONTENT=ON"
     system "./bin/compile"
     system "./bin/install"
   end
