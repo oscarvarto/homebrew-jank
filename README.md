@@ -60,3 +60,7 @@ brew "jank"
 For more on `brew`, check `brew help`.
 
 For more on jank, check out [the repo](https://github.com/jank-lang/jank)
+
+# Reporting issues
+If you run into any issues with this formula, please report them on the main
+jank repo here: https://github.com/jank-lang/jank
