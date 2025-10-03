@@ -12,7 +12,7 @@ class Jank < Formula
   depends_on "bdw-gc"
   depends_on "boost"
   depends_on "libzip"
-  depends_on "llvm@19"
+  depends_on "llvm@21"
   depends_on "openssl"
 
   def install
