@@ -40,6 +40,30 @@ class JankGit < Formula
       ENV["SDKROOT"] = sdk
       ENV["HOMEBREW_SDKROOT"] = sdk
       ENV["DEVELOPER_DIR"] = developer_dir
+
+      # Patch CMakeLists so the generated JIT flags don't bake CommandLineTools paths.
+      inreplace "compiler+runtime/CMakeLists.txt" do |s|
+        s.sub!(
+          "separate_arguments(clang_system_include_dirs)\n\nset(clang_system_include_flags \"\")",
+          <<~'CMAKE'.chomp
+            separate_arguments(clang_system_include_dirs)
+
+            if(APPLE AND DEFINED ENV{SDKROOT})
+              set(_jank_sdk "$ENV{SDKROOT}")
+              if(_jank_sdk)
+                set(_adjusted_dirs "")
+                foreach(dir ${clang_system_include_dirs})
+                  string(REGEX REPLACE "/Library/Developer/CommandLineTools/SDKs/[^/]*/" "${_jank_sdk}/" dir "${dir}")
+                  list(APPEND _adjusted_dirs "${dir}")
+                endforeach()
+                set(clang_system_include_dirs "${_adjusted_dirs}")
+              endif()
+            endif()
+
+            set(clang_system_include_flags "")
+          CMAKE
+        )
+      end
     end
 
     # Critical: Ensure Homebrew LLVM's libc++ headers come BEFORE SDK C headers
