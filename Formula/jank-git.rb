@@ -63,6 +63,18 @@ class JankGit < Formula
             set(clang_system_include_flags "")
           CMAKE
         )
+        s.sub!(
+          "foreach(lib ${jank_lib_link_dirs_prop})\n  list(APPEND jank_lib_linker_flags_list -L${lib})\nendforeach()",
+          <<~'CMAKE'.chomp
+            foreach(lib ${jank_lib_link_dirs_prop})
+              if(lib STREQUAL "/lib" OR lib STREQUAL "/usr/lib" OR lib STREQUAL "")
+                # Skip system defaults; clang will find them via the SDK automatically.
+              else()
+                list(APPEND jank_lib_linker_flags_list -L${lib})
+              endif()
+            endforeach()
+          CMAKE
+        )
       end
     end
 
