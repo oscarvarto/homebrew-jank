@@ -147,6 +147,7 @@ class JankGit < Formula
       exec "#{libexec_bin/"jank"}" "$@"
     SH
     (bin/"jank").chmod 0755
+    ln_s lib, libexec/"lib", force: true
   end
 
   test do
