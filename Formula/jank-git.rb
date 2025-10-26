@@ -54,9 +54,12 @@ class JankGit < Formula
 
     cd "compiler+runtime"
 
+    cmake_args = std_cmake_args
+    cmake_args = cmake_args.reject { |arg| arg.start_with?("-DCMAKE_OSX_SYSROOT=") } if OS.mac?
+
     configure_args = [
       "-GNinja",
-      *std_cmake_args,
+      *cmake_args,
       "-DHOMEBREW_ALLOW_FETCHCONTENT=ON",
       "-DCMAKE_CXX_COMPILER=#{llvm.opt_bin}/clang++",
       "-DCMAKE_C_COMPILER=#{llvm.opt_bin}/clang"
