@@ -11,7 +11,7 @@ class JankGit < Formula
 
   depends_on "boost"
   depends_on "libzip"
-  depends_on "llvm@21"
+  depends_on "llvm"
   depends_on "openssl"
 
   skip_clean "bin/jank"
@@ -26,7 +26,7 @@ class JankGit < Formula
     ENV.delete("SDKROOT") # Clear Nix's SDKROOT pointing to old SDK
 
     # Use Homebrew's LLVM (not system clang, not Nix clang)
-    llvm = Formula["llvm@21"]
+    llvm = Formula["llvm"]
     ENV.prepend_path "PATH", llvm.opt_bin
     ENV["CC"] = llvm.opt_bin/"clang"
     ENV["CXX"] = llvm.opt_bin/"clang++"
@@ -54,8 +54,8 @@ class JankGit < Formula
            "-GNinja",
            *std_cmake_args,
            "-DHOMEBREW_ALLOW_FETCHCONTENT=ON",
-           "-DCMAKE_CXX_COMPILER=#{Formula["llvm@21"].opt_bin}/clang++",
-           "-DCMAKE_C_COMPILER=#{Formula["llvm@21"].opt_bin}/clang"
+           "-DCMAKE_CXX_COMPILER=#{llvm.opt_bin}/clang++",
+           "-DCMAKE_C_COMPILER=#{llvm.opt_bin}/clang"
     system "./bin/compile"
     system "./bin/install"
   end
