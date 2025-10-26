@@ -17,29 +17,36 @@ class JankGit < Formula
   skip_clean "bin/jank"
 
   def install
-    ENV.prepend_path "PATH", Formula["llvm@21"].opt_bin
+    # Clear Nix-provided compiler flags that point to old SDK (11.3)
+    # This is critical when building on systems with Nix installed
+    # These variables interfere with proper SDK and libc++ header resolution
+    ENV.delete("NIX_CFLAGS_COMPILE")
+    ENV.delete("NIX_LDFLAGS")
+    ENV.delete("NIX_APPLE_SDK_VERSION")
+    ENV.delete("SDKROOT") # Clear Nix's SDKROOT pointing to old SDK
 
-    # Critical: Ensure libc++ headers come BEFORE SDK headers
+    # Use Homebrew's LLVM (not system clang, not Nix clang)
+    llvm = Formula["llvm@21"]
+    ENV.prepend_path "PATH", llvm.opt_bin
+    ENV["CC"] = llvm.opt_bin/"clang"
+    ENV["CXX"] = llvm.opt_bin/"clang++"
+
+    # Use system Xcode SDK for macOS headers/frameworks (not Nix SDK)
     # This fixes the macOS 26 header ordering issue (jank-lang/jank#560)
-    llvm_include = Formula["llvm@21"].opt_include
-    ENV.prepend "CPPFLAGS", "-isystem #{llvm_include}/c++/v1"
-    ENV.prepend "CXXFLAGS", "-isystem #{llvm_include}/c++/v1"
-
-    # Use LLVM's clang explicitly on macOS to avoid Homebrew clang issues
     if OS.mac?
-      ENV["CC"] = Formula["llvm@21"].opt_bin/"clang"
-      ENV["CXX"] = Formula["llvm@21"].opt_bin/"clang++"
       ENV["SDKROOT"] = MacOS.sdk_path
-    else
-      ENV["CC"] = Formula["llvm@21"].opt_bin/"clang"
-      ENV["CXX"] = Formula["llvm@21"].opt_bin/"clang++"
+      ENV["DEVELOPER_DIR"] = "/Applications/Xcode.app/Contents/Developer"
     end
 
-    ENV.append "LDFLAGS", "-Wl,-rpath,#{Formula["llvm@21"].opt_lib}"
-    ENV.append "LDFLAGS", "-L#{Formula["llvm@21"].opt_lib}"
+    # Critical: Ensure Homebrew LLVM's libc++ headers come BEFORE SDK C headers
+    # Use -isystem for libc++ to prioritize it, -I for other LLVM includes
+    llvm_include = llvm.opt_include
+    llvm_lib = llvm.opt_lib
 
-    ENV.append "CPPFLAGS", "-I#{llvm_include}"
-    ENV.append "CPPFLAGS", "-fno-sized-deallocation"
+    # Build flags with proper header search order
+    ENV["CPPFLAGS"] = "-isystem #{llvm_include}/c++/v1 -I#{llvm_include} -fno-sized-deallocation"
+    ENV["CXXFLAGS"] = "-isystem #{llvm_include}/c++/v1"
+    ENV["LDFLAGS"] = "-L#{llvm_lib} -Wl,-rpath,#{llvm_lib}"
 
     cd "compiler+runtime"
 
