@@ -23,6 +23,7 @@ class JankGit < Formula
     ENV.delete("NIX_CFLAGS_COMPILE")
     ENV.delete("NIX_LDFLAGS")
     ENV.delete("NIX_APPLE_SDK_VERSION")
+    ENV.delete("MACOSX_DEPLOYMENT_TARGET")
     ENV.delete("SDKROOT") # Clear Nix's SDKROOT pointing to old SDK
 
     # Use Homebrew's LLVM (not system clang, not Nix clang)
@@ -79,7 +80,7 @@ class JankGit < Formula
           "if (NOT jank_local_clang)\n  list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++ -L/opt/homebrew/opt/llvm/lib/unwind)\nendif ()",
           <<~'CMAKE'.chomp
             if (NOT jank_local_clang)
-              list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++ -L/opt/homebrew/opt/llvm/lib/unwind)
+              list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++)
             endif ()
 
             if(APPLE AND DEFINED ENV{SDKROOT})
@@ -87,6 +88,18 @@ class JankGit < Formula
               list(APPEND jank_linker_flags "-L$ENV{SDKROOT}/usr/lib")
             endif()
           CMAKE
+        )
+      end
+
+      inreplace "compiler+runtime/src/cpp/jank/aot/processor.cpp" do |s|
+        s.sub!(
+          "          \"-lm\",\n          \"-lstdc++\",",
+          <<~'CPP'.chomp
+            "-lm",
+#if !defined(__APPLE__)
+            "-lstdc++",
+#endif
+          CPP
         )
       end
     end
@@ -118,6 +131,22 @@ class JankGit < Formula
     system "./bin/configure", *configure_args
     system "./bin/compile"
     system "./bin/install"
+
+    libexec_bin = libexec/"bin"
+    libexec_bin.install bin/"jank"
+    (bin/"jank").write <<~SH
+      #!/usr/bin/env bash
+      set -euo pipefail
+      unset SDKROOT
+      unset HOMEBREW_SDKROOT
+      unset MACOSX_DEPLOYMENT_TARGET
+      unset NIX_CFLAGS_COMPILE
+      unset NIX_LDFLAGS
+      unset NIX_APPLE_SDK_VERSION
+      unset NIX_APPLE_SDK_ROOT
+      exec "#{libexec_bin/"jank"}" "$@"
+    SH
+    (bin/"jank").chmod 0755
   end
 
   test do

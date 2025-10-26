@@ -15,6 +15,22 @@ class Jank < Formula
     (buildpath/"usr/local").cd do
       cp_r Dir["*"], prefix
     end
+
+    libexec_bin = libexec/"bin"
+    libexec_bin.install bin/"jank"
+    (bin/"jank").write <<~SH
+      #!/usr/bin/env bash
+      set -euo pipefail
+      unset SDKROOT
+      unset HOMEBREW_SDKROOT
+      unset MACOSX_DEPLOYMENT_TARGET
+      unset NIX_CFLAGS_COMPILE
+      unset NIX_LDFLAGS
+      unset NIX_APPLE_SDK_VERSION
+      unset NIX_APPLE_SDK_ROOT
+      exec "#{libexec_bin/"jank"}" "$@"
+    SH
+    (bin/"jank").chmod 0755
   end
 
   test do
