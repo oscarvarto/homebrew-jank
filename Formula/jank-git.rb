@@ -31,11 +31,15 @@ class JankGit < Formula
     ENV["CC"] = llvm.opt_bin/"clang"
     ENV["CXX"] = llvm.opt_bin/"clang++"
 
-    # Use system Xcode SDK for macOS headers/frameworks (not Nix SDK)
-    # This fixes the macOS 26 header ordering issue (jank-lang/jank#560)
+    # Use the full Xcode SDK for macOS headers/frameworks (not CommandLineTools)
+    # Homebrew's MacOS.sdk_path returns the CLT SDK, so query xcrun directly.
     if OS.mac?
-      ENV["SDKROOT"] = MacOS.sdk_path
-      ENV["DEVELOPER_DIR"] = "/Applications/Xcode.app/Contents/Developer"
+      sdk = Utils.safe_popen_read("/usr/bin/xcrun", "--sdk", "macosx", "--show-sdk-path").strip
+      developer_dir = Utils.safe_popen_read("/usr/bin/xcode-select", "--print-path").strip
+
+      ENV["SDKROOT"] = sdk
+      ENV["HOMEBREW_SDKROOT"] = sdk
+      ENV["DEVELOPER_DIR"] = developer_dir
     end
 
     # Critical: Ensure Homebrew LLVM's libc++ headers come BEFORE SDK C headers
@@ -50,12 +54,16 @@ class JankGit < Formula
 
     cd "compiler+runtime"
 
-    system "./bin/configure",
-           "-GNinja",
-           *std_cmake_args,
-           "-DHOMEBREW_ALLOW_FETCHCONTENT=ON",
-           "-DCMAKE_CXX_COMPILER=#{llvm.opt_bin}/clang++",
-           "-DCMAKE_C_COMPILER=#{llvm.opt_bin}/clang"
+    configure_args = [
+      "-GNinja",
+      *std_cmake_args,
+      "-DHOMEBREW_ALLOW_FETCHCONTENT=ON",
+      "-DCMAKE_CXX_COMPILER=#{llvm.opt_bin}/clang++",
+      "-DCMAKE_C_COMPILER=#{llvm.opt_bin}/clang"
+    ]
+    configure_args << "-DCMAKE_OSX_SYSROOT=#{ENV["SDKROOT"]}" if OS.mac?
+
+    system "./bin/configure", *configure_args
     system "./bin/compile"
     system "./bin/install"
   end
