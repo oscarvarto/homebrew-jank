@@ -75,6 +75,19 @@ class JankGit < Formula
             endforeach()
           CMAKE
         )
+        s.sub!(
+          "if (NOT jank_local_clang)\n  list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++ -L/opt/homebrew/opt/llvm/lib/unwind)\nendif ()",
+          <<~'CMAKE'.chomp
+            if (NOT jank_local_clang)
+              list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++ -L/opt/homebrew/opt/llvm/lib/unwind)
+            endif ()
+
+            if(APPLE AND DEFINED ENV{SDKROOT})
+              list(APPEND jank_linker_flags "-isysroot" "$ENV{SDKROOT}")
+              list(APPEND jank_linker_flags "-L$ENV{SDKROOT}/usr/lib")
+            endif()
+          CMAKE
+        )
       end
     end
 
