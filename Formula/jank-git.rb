@@ -1,7 +1,7 @@
 class JankGit < Formula
   desc "The native Clojure dialect hosted on LLVM with seamless C++ interop."
   homepage "https://jank-lang.org"
-  url "https://github.com/jank-lang/jank.git", branch: "main"
+  url "https://github.com/oscarvarto/jank.git", branch: "main"
   version "0.1"
   license "MPL-2.0"
 
@@ -11,7 +11,7 @@ class JankGit < Formula
 
   depends_on "boost"
   depends_on "libzip"
-  depends_on "llvm"
+  depends_on "llvm" => :HEAD
   depends_on "openssl"
 
   skip_clean "bin/jank"
@@ -41,77 +41,6 @@ class JankGit < Formula
       ENV["SDKROOT"] = sdk
       ENV["HOMEBREW_SDKROOT"] = sdk
       ENV["DEVELOPER_DIR"] = developer_dir
-
-      # Patch CMakeLists so the generated JIT flags don't bake CommandLineTools paths.
-      inreplace "compiler+runtime/CMakeLists.txt" do |s|
-        s.sub!(
-          "separate_arguments(clang_system_include_dirs)\n\nset(clang_system_include_flags \"\")",
-          <<~'CMAKE'.chomp
-            separate_arguments(clang_system_include_dirs)
-
-            if(APPLE)
-              set(_adjusted_dirs "")
-              foreach(dir ${clang_system_include_dirs})
-                if(dir MATCHES "/SDKs/")
-                  # Skip SDK include paths; clang will find them via -isysroot.
-                else()
-                  list(APPEND _adjusted_dirs "${dir}")
-                endif()
-              endforeach()
-              set(clang_system_include_dirs "${_adjusted_dirs}")
-            endif()
-
-            set(clang_system_include_flags "")
-          CMAKE
-        )
-        s.sub!(
-          "foreach(lib ${jank_lib_link_dirs_prop})\n  list(APPEND jank_lib_linker_flags_list -L${lib})\nendforeach()",
-          <<~'CMAKE'.chomp
-            foreach(lib ${jank_lib_link_dirs_prop})
-              if(lib STREQUAL "/lib" OR lib STREQUAL "/usr/lib" OR lib STREQUAL "")
-                # Skip system defaults; clang will find them via the SDK automatically.
-              else()
-                list(APPEND jank_lib_linker_flags_list -L${lib})
-              endif()
-            endforeach()
-          CMAKE
-        )
-        s.sub!(
-          "if (NOT jank_local_clang)\n  list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++ -L/opt/homebrew/opt/llvm/lib/unwind)\nendif ()",
-          <<~'CMAKE'.chomp
-            if (NOT jank_local_clang)
-              list(APPEND jank_linker_flags -L/opt/homebrew/opt/llvm/lib -L/opt/homebrew/opt/llvm/lib/c++)
-            endif ()
-
-            if(APPLE AND DEFINED ENV{SDKROOT})
-              list(APPEND jank_linker_flags "-isysroot" "$ENV{SDKROOT}")
-              list(APPEND jank_linker_flags "-L$ENV{SDKROOT}/usr/lib")
-            endif()
-          CMAKE
-        )
-      end
-
-      inreplace "compiler+runtime/src/cpp/jank/aot/processor.cpp" do |s|
-        pattern = /([ \t]*)"-lm",[ \t]*\n\1"-lstdc\+\+",/
-        replacement = <<~'CPP'
-"-lm",
-#if !defined(__APPLE__)
-"-lstdc++",
-#endif
-        CPP
-
-        match = pattern.match(s.inreplace_string)
-        raise "Failed to find libm/libstdc++ linker flags" unless match
-
-        indent = match[1]
-        formatted = replacement.lines.map { |line|
-          line.match?(/\S/) ? "#{indent}#{line}" : line
-        }.join
-
-        unless s.sub!(pattern, formatted)
-          raise "Failed to patch libm/libstdc++ linker flags"
-        end
-      end
     end
 
     # Critical: Ensure Homebrew LLVM's libc++ headers come BEFORE SDK C headers
