@@ -92,15 +92,20 @@ class JankGit < Formula
       end
 
       inreplace "compiler+runtime/src/cpp/jank/aot/processor.cpp" do |s|
-        s.sub!(
-          "          \"-lm\",\n          \"-lstdc++\",",
-          <<~'CPP'.chomp
-            "-lm",
+        pattern = /([ \t]*)"-lm",[ \t]*\n\1"-lstdc\+\+",/
+        replacement = <<~'CPP'
+"-lm",
 #if !defined(__APPLE__)
-            "-lstdc++",
+"-lstdc++",
 #endif
-          CPP
-        )
+        CPP
+
+        unless s.sub!(pattern) do
+          indent = Regexp.last_match(1)
+          replacement.each_line.map { |line| "#{indent}#{line}" }.join
+        end
+          raise "Failed to patch libm/libstdc++ linker flags"
+        end
       end
     end
 
