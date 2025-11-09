@@ -100,7 +100,7 @@ class JankGit < Formula
 #endif
         CPP
 
-        match = pattern.match(s)
+        match = pattern.match(s.inreplace_string)
         raise "Failed to find libm/libstdc++ linker flags" unless match
 
         indent = match[1]
