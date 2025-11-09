@@ -100,12 +100,12 @@ class JankGit < Formula
 #endif
         CPP
 
-        unless s.sub!(pattern) do
+        patched = s.sub!(pattern) do
           indent = Regexp.last_match(1)
-          replacement.each_line.map { |line| "#{indent}#{line}" }.join
+          replacement.each_line.map { |line| line.empty? ? line : "#{indent}#{line}" }.join
         end
-          raise "Failed to patch libm/libstdc++ linker flags"
-        end
+
+        raise "Failed to patch libm/libstdc++ linker flags" unless patched
       end
     end
 
