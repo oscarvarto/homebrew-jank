@@ -49,7 +49,8 @@ class JankGit < Formula
     llvm_lib = llvm.opt_lib
 
     # Build flags with proper header search order
-    ENV["CPPFLAGS"] = "-isystem #{llvm_include}/c++/v1 -I#{llvm_include} -fno-sized-deallocation"
+    # NOTE: Testing without -fno-sized-deallocation to see if still needed with LLVM 22
+    ENV["CPPFLAGS"] = "-isystem #{llvm_include}/c++/v1 -I#{llvm_include}"
     ENV["CXXFLAGS"] = "-isystem #{llvm_include}/c++/v1"
     ENV["LDFLAGS"] = "-L#{llvm_lib} -Wl,-rpath,#{llvm_lib}"
 
