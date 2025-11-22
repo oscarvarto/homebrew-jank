@@ -76,13 +76,27 @@ class JankGit < Formula
     (bin/"jank").write <<~SH
       #!/usr/bin/env bash
       set -euo pipefail
-      unset SDKROOT
-      unset HOMEBREW_SDKROOT
-      unset MACOSX_DEPLOYMENT_TARGET
-      unset NIX_CFLAGS_COMPILE
-      unset NIX_LDFLAGS
-      unset NIX_APPLE_SDK_VERSION
-      unset NIX_APPLE_SDK_ROOT
+
+      # Unset environment variables that interfere with jank's JIT compilation.
+      #
+      # Context: jank uses Clang's JIT to compile Clojure code at runtime. When
+      # these environment variables are set (especially in nix-darwin environments),
+      # they can cause SDK path conflicts and header ordering issues.
+      #
+      # - SDKROOT/HOMEBREW_SDKROOT: Should be discovered dynamically by Clang's JIT
+      #   via -isysroot, not hardcoded. Hardcoded paths can point to different SDK
+      #   versions or conflict with LLVM's libc++ headers.
+      # - NIX_* variables: Point to Nix's SDK (often outdated) and inject compiler
+      #   flags incompatible with Homebrew's LLVM toolchain.
+      # - MACOSX_DEPLOYMENT_TARGET: Can conflict with the SDK version detected at
+      #   JIT compile time.
+      #
+      # By clearing these variables, jank's JIT can correctly discover the system
+      # SDK and headers without interference from build-time or package manager
+      # environment pollution.
+      unset SDKROOT HOMEBREW_SDKROOT MACOSX_DEPLOYMENT_TARGET
+      unset NIX_CFLAGS_COMPILE NIX_LDFLAGS NIX_APPLE_SDK_VERSION NIX_APPLE_SDK_ROOT
+
       exec "#{libexec_bin/"jank"}" "$@"
     SH
     (bin/"jank").chmod 0755
